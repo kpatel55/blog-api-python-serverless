@@ -1,0 +1,86 @@
+service: blog-api-python
+
+frameworkVersion: '3'
+
+provider:
+  name: aws
+  runtime: python3.8
+  region: us-east-1
+  timeout: 10
+  memorySize: 128
+  environment:
+    DYNAMODB_TABLE: ${self:custom.dynamoTable}
+    REGION_NAME: ${self:provider.region}
+
+  iam:
+    role:
+      statements:
+        - Effect: 'Allow'
+          Resource: '*'
+          Action: 's3:*'
+        - Effect: 'Allow'
+          Resource: 'arn:aws:dynamodb:${opt:region, self:provider.region}:*:table/${self:provider.environment.DYNAMODB_TABLE}'
+          Action:
+            - dynamodb:GetItem
+            - dynamodb:PutItem
+            - dynamodb:UpdateItem
+            - dynamodb:DeleteItem
+            - dynamodb:Query
+            - dynamodb:Scan
+
+custom:
+  bucket: [ADD_YOUR_BUCKET_NAME_HERE]
+  dynamoTable: [ADD_YOUR_TABLE_NAME_HERE]
+  pythonRequirements:
+    dockerizePip: true
+
+functions:
+  blogPosts:
+    handler: handler.blogPosts
+    events:
+      - s3:
+          bucket: ${self:custom.bucket}
+      - http:
+          path: posts/create
+          method: post
+          cors: true
+  blogList:
+    handler: handler.blogList
+    events:
+      - http:
+          path: posts/all
+          method: get
+          cors: true
+  getPost:
+    handler: handler.getPost
+    events:
+      - http:
+          path: posts/{id}
+          method: get
+          cors: true
+  deletePost:
+    handler: handler.deletePost
+    events:
+      - http:
+          path: posts/{id}
+          method: delete
+          cors: true
+
+
+resources:
+  Resources:
+    PostsDynamoDbTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
+        TableName: ${self:provider.environment.DYNAMODB_TABLE}
+plugins:
+  - serverless-python-requirements
