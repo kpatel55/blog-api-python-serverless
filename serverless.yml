@@ -29,8 +29,8 @@ provider:
             - dynamodb:Scan
 
 custom:
-  bucket: [ADD_YOUR_BUCKET_NAME_HERE]
-  dynamoTable: [ADD_YOUR_TABLE_NAME_HERE]
+  bucket: blog-images-bucket
+  dynamoTable: blog-data-db
   pythonRequirements:
     dockerizePip: true
 
