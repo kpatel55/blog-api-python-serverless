@@ -1,10 +1,12 @@
 # Serverless Framework AWS Python
 
+Backend for a blog written in python with serverless framework for deploying to AWS
+
 ## Usage
 
 ### Deployment
 
-In order to deploy the example, you need to run the following command:
+Deploy with:
 
 ```
 $ sls deploy
